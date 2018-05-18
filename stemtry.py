@@ -7,7 +7,7 @@ import stem.process
 
 from stem.util import term
 
-SOCKS_PORT = 7000
+SOCKS_PORT = 9050
 
 
 def query(url):
@@ -38,24 +38,24 @@ def query(url):
 def print_bootstrap_lines(line):
   if "Bootstrapped " in line:
     print(term.format(line, term.Color.BLUE))
-  else:
-    print(line)
 
 
 print(term.format("Starting Tor:\n", term.Attr.BOLD))
 
 tor_process = stem.process.launch_tor_with_config(
-  tor_cmd = 'C:\\Mr_Anderson\\Tor\\Tor\\tor.exe',
   config = {
-    'HTTPProxy': '192.168.12.114:8000',
-    'HTTPSProxy': '192.168.12.114:8000',
     'SocksPort': str(SOCKS_PORT),
-    #'ExitNodes': '{ru}',
+    'ExcludeExitNodes': '{ru}',
   },
-  init_msg_handler = print,
+  init_msg_handler = print_bootstrap_lines,
 )
 
-print(term.format("\nChecking our endpoint:\n", term.Attr.BOLD))
-print(term.format(query("https://google.com/"), term.Color.BLUE))
+'''tor_process = stem.process.launch_tor(
+  init_msg_handler = print_bootstrap_lines,
+)'''
 
+print(term.format("\nChecking our endpoint:\n", term.Attr.BOLD))
+print(term.format(query("https://www.atagar.com/echo.php"), term.Color.BLUE))
+
+input(term.format('Press Enter to stop...', term.Color.RED))
 tor_process.kill()  # stops tor
