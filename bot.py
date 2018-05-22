@@ -78,7 +78,7 @@ def logNote(str_):
 
 def logError(while_, more = ''):
   global log_len
-  print('E: While {while_}{more}'.format(while_ = while_, more = '\n' + more if more != '' else '').ljust(log_len))
+  print('E: While {while_}{more}'.format(while_ = while_, more = '\n' + str(more) if str(more) != '' else '').ljust(log_len))
   log_len = 0
 
 def logStatus(str_):
@@ -91,7 +91,7 @@ def sendAnswer(type_, chat_id, locale_lang = 'en', **kwargs):
   logStatus('Answering to {chat_id}'.format(chat_id = chat_id))
   res = tgQuery('sendMessage', offset = offset, chat_id = chat_id,
                 text = locale[locale_lang][type_].format(**kwargs),
-                parse_mode = 'Markdown')
+                parse_mode = 'HTML')
   if res['ok'] != True:
     logError(while_ = 'sending answer', more = { 'server answer': res['description'],
                                                  'chat_id': chat_id,
@@ -101,7 +101,7 @@ def sendAnswer(type_, chat_id, locale_lang = 'en', **kwargs):
 
 def process_update(update):
   logStatus('Processing update {index}'.format(index = update['update_id']))
-  if 'message' not in update:
+  if 'message' not in update or 'text' not in update['message']:
     return
   message = update['message']
   chat_id = message['chat']['id']

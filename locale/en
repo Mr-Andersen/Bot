@@ -1,5 +1,5 @@
 {
-  "greeting": "Oh hi, *{first_name}*\n1. Firstly you need handle, so use /new\n2. Then use /from <your new handle>, so you can send messages\n3. Enjoy",
+  "greeting": "Oh hi, <b>{first_name}</b>\n1. Firstly you need handle, so use /new\n2. Then use /from <your new handle>, so you can send messages\n3. Enjoy",
   "new_handle": "Your new anonymous handle ({index}): `{handle}`",
   "handle_not_found": "Handle not found. Check if you wrote it correctly",
   "wrong_args": "Wrong arguments. This command is used like this:\n{correct}",
@@ -10,7 +10,7 @@
   "handle_disabled": "Your handle was disabled",
   "set_from": "Now your default handle is `{handle}`",
   "cancelled": "Current operation was cancelled",
-  "letter": "*From:* `{from_}`\n*To:* `{to}`\n\n{text}",
+  "letter": "<b>From:</b> `{from_}`\n<b>To:</b> `{to}`\n\n{text}",
   "from_not_set": "You need to set use /from first",
   "letter_sent": "Your letter was sent",
   "empty": "{content}",
