@@ -4,10 +4,11 @@ import requests as req
 import json
 import sqlite3 as sql
 from random import Random
+from os import listdir
 
 # === Handles functions ===
 def genHandle():
-  alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_-'
+  alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-'
   res = ''
   for i in range(64):
     res += random.choice(alphabet)
@@ -16,7 +17,7 @@ def genHandle():
 def isHandle(handle):
   if len(handle) != 64:
     return False
-  alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_-'
+  alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-'
   for c in handle:
     if c not in alphabet:
       return False
@@ -82,18 +83,21 @@ def logError(while_, more = ''):
 
 def logStatus(str_):
   global log_len
-  print(str_.ljust(log_len), end = '\r')
-  log_len = len(str_)
+  print('S:', str_.ljust(log_len), end = '\r')
+  log_len = len(str_) + 3
 
 # === other functions ===
 def sendAnswer(type_, chat_id, locale_lang = 'en', **kwargs):
-  logStatus('Sending message to {chat_id}'.format(chat_id = chat_id))
+  logStatus('Answering to {chat_id}'.format(chat_id = chat_id))
   res = tgQuery('sendMessage', offset = offset, chat_id = chat_id,
                 text = locale[locale_lang][type_].format(**kwargs),
                 parse_mode = 'Markdown')
   if res['ok'] != True:
-    logError(while_ = 'sending answer', more = res['description'])
-  logNote('Answer to {chat_id} sent'.format(chat_id = chat_id))
+    logError(while_ = 'sending answer', more = { 'server answer': res['description'],
+                                                 'chat_id': chat_id,
+                                                 'text': locale[locale_lang][type_].format(**kwargs) })
+  else:
+    logNote('Answer {type_} to {chat_id} sent'.format(type_ = type_, chat_id = chat_id))
 
 def process_update(update):
   logStatus('Processing update {index}'.format(index = update['update_id']))
@@ -104,6 +108,16 @@ def process_update(update):
   if not userInDB(chat_id):
     addUser(chat_id)
   
+  if 'reply_to_message' in message:
+    if message['reply_to_message']['from']['username'] == 'anonymous_chat_ro_bot' and \
+       message['reply_to_message']['text'][:5] == 'From:' and \
+       message['reply_to_message']['text'][71:74] == 'To:':
+       to = message['reply_to_message']['text'][6:70]
+       sendAnswer('letter', getHandle(to)[1], from_ = message['reply_to_message']['text'][75:139],
+                  to = to, text = message['text'])
+       return sendAnswer('letter_sent', chat_id)
+    return sendAnswer('wrong_reply', chat_id)
+
   state = getUser(chat_id)[1]
   command, *args = message['text'].split()
   if state == '': # user was doing nothing
@@ -171,8 +185,6 @@ def process_update(update):
     del buffer_[chat_id]
     return sendAnswer('letter_sent', chat_id)
 
-  logNote('Update {update_id} processed'.format(update_id = update['update_id']))
-
 def print_dict(dct):
   return(json.dumps(dct, sort_keys = True, indent = 4, ensure_ascii = False))
 
@@ -190,7 +202,11 @@ offset = 0
 buffer_ = dict()
 log_len = 0
 
-locale = { 'en': json.load(open('locale/en', 'rt')) }
+locale = dict()
+for l in listdir('locale'):
+  logStatus('Loading {locale} locale'.format(locale = l))
+  locale[l] = json.load(open('locale/{locale}'.format(locale = l), 'rt'))
+  logNote('Loaded {locale} locale'.format(locale = l))
 
 db = sql.connect('database.db')
 tables = set(db.execute('SELECT name FROM sqlite_master WHERE type=\'table\';').fetchall())
@@ -200,15 +216,18 @@ if ('handles',) not in tables:
   logStatus('Created "handles" table')
 else:
   logStatus('Found existing "handles" table')
+logNote('Table "handles" opened')
 
 if ('users',) not in tables:
   db.execute('CREATE TABLE users(chat_id INT, state TEXT, from_ CHAR(64));')
-  logStatus('Created "handles" table')
+  logStatus('Created "users" table')
 else:
-  logStatus('Found existing "handles" table')
+  logStatus('Found existing "users" table')
+logNote('Table "users" opened')
 
 while True:
   ans = tgQuery('getUpdates', offset = offset)
   for update in ans['result']:
     process_update(update)
+    logNote('Update {update_id} processed'.format(update_id = update['update_id']))
     offset = update['update_id'] + 1

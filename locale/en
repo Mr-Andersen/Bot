@@ -6,12 +6,13 @@
   "index_out_of_bounds": "Index is out of bounds",
   "send_text": "Now send me text",
   "unknown_command": "Unknown command. Use /help to get list of them",
-  "help": "/new - create new handle. At least one is required to send messages\n/del <handle> - disable your handle. Messages which come to it won't be redirected to you\n/from <index:int> - set handle N<index> as a default \"From\" address\n/send <handle> - send message to owner of <handle>",
+  "help": "/new - create new handle. At least one is required to send messages\n/del <handle> - disable your handle. Messages which come to it won't be redirected to you\n/from <handle> - set handle <handle> as a default \"From\" address\n/send <handle> - send message to owner of <handle>",
   "handle_disabled": "Your handle was disabled",
   "set_from": "Now your default handle is `{handle}`",
   "cancelled": "Current operation was cancelled",
   "letter": "*From:* `{from_}`\n*To:* `{to}`\n\n{text}",
   "from_not_set": "You need to set use /from first",
   "letter_sent": "Your letter was sent",
-  "empty": "{content}"
+  "empty": "{content}",
+  "wrong_reply": "I can process replies at letters only"
 }
