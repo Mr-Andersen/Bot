@@ -52,7 +52,7 @@ def eraseHandle(handle):
 
 # === user db functions ===
 def addUser(chat_id):
-  db.execute('INSERT INTO users VALUES ({chat_id}, NULL, \'\');'.format(chat_id = chat_id))
+  db.execute('INSERT INTO users VALUES ({chat_id}, \'\', \'\');'.format(chat_id = chat_id))
   db.commit()
 
 def userInDB(chat_id):
@@ -165,9 +165,9 @@ def process_update(update):
     return sendAnswer('unknown_command', chat_id)
 
   if state == 'sending':
-    setUserState(chat_id, '')
     handle = getUser(chat_id)[2]
-    sendAnswer('letter', getHandle(handle)[1], from_ = getUser(chat_id)[2], to = handle, text = message['text'])
+    sendAnswer('letter', getHandle(buffer_[chat_id])[1], from_ = handle, to = buffer_[chat_id], text = message['text'])
+    setUserState(chat_id, '')
     del buffer_[chat_id]
     return sendAnswer('letter_sent', chat_id)
 
