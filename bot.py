@@ -146,7 +146,7 @@ def process_update(update):
       handle = args[0]
       if not handleInDB(handle):
         return sendAnswer('handle_not_found', chat_id)
-      if getUser(chat_id) == None:
+      if getUser(chat_id)[2] == '':
         return sendAnswer('from_not_set', chat_id)
       buffer_[chat_id] = handle
       setUserState(chat_id, 'sending')
