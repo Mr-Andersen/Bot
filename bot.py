@@ -41,7 +41,7 @@ def getHandle(handle):
   return db.execute('SELECT * FROM handles WHERE handle = \'{handle}\';'.format(handle = handle)).fetchall()[0] # because handles are unique
 
 def userHandles(chat_id):
-  return set([ tuple_[0] for tuple_ in db.execute('SELECT handle FROM handles WHERE chat_id = {chat_id};'.format(chat_id = chat_id)).fetchall() ])
+  return [ tuple_[0] for tuple_ in db.execute('SELECT handle FROM handles WHERE chat_id = {chat_id};'.format(chat_id = chat_id)).fetchall() ]
 
 def disableHandle(handle, date):
   db.execute('UPDATE handles SET chat_id = NULL, date = {date} WHERE handle = \'{handle}\';'.format(handle = handle, date = date))
@@ -84,7 +84,7 @@ def logError(while_, more = ''):
 def logStatus(str_):
   global log_len
   print('S:', str_.ljust(log_len), end = '\r')
-  log_len = len(str_) + 3
+  log_len = len(str_) + len('S: ')
 
 # === other functions ===
 def sendAnswer(type_, chat_id, locale_lang = 'en', **kwargs):
@@ -167,7 +167,7 @@ def process_update(update):
       return sendAnswer('send_text', chat_id)
 
     if command == '/list':
-      res = '\n\n'.join([ '`{handle}`'.format(handle = handle) for handle in userHandles(chat_id) ])
+      res = '\n\n'.join([ '<pre>{handle}</pre>'.format(handle = handle) for handle in userHandles(chat_id) ])
       return sendAnswer('empty', chat_id, content = res if res != '' else 'You have no handles')
 
     if command == '/help':
