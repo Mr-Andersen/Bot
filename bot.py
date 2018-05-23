@@ -5,6 +5,12 @@ import json
 import sqlite3 as sql
 from random import Random
 from os import listdir
+import signal
+
+def cleanExit(signal, frame):
+  logNote('Exiting cleanly')
+  db.close()
+  exit(0)
 
 # === Handles functions ===
 def genHandle():
@@ -25,8 +31,18 @@ def isHandle(handle):
 
 # === Tg API functions ===
 def tgQuery(method, **dct):
-  response = req.post(urly(method), data = dct, proxies = proxies)
+  error = 0
+  while True:
+    try:
+      response = req.post(urly(method), data = dct, proxies = proxies)
+      break
+    except req.exceptions.ConnectionError:
+      if error == 0:
+        logError('sending query')
+      logStatus('Retrying query')
+      error += 1
   result = response.json()
+  logStatus('Sent query')
   return result
 
 # === handle db funcitons ===
@@ -189,6 +205,8 @@ def print_dict(dct):
   return(json.dumps(dct, sort_keys = True, indent = 4, ensure_ascii = False))
 
 # === main action ===
+signal.signal(signal.SIGINT, cleanExit)
+
 token = open('token', 'rt').read()
 url = 'https://api.telegram.org/bot{token}/'.format(token = token)
 urly = lambda method: url + method
