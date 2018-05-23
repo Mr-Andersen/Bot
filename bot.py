@@ -212,7 +212,7 @@ db = sql.connect('database.db')
 tables = set(db.execute('SELECT name FROM sqlite_master WHERE type=\'table\';').fetchall())
 
 if ('handles',) not in tables:
-  db.execute('CREATE TABLE handles(handle CHAR(64), chat_id INT, date INT);')
+  db.execute('CREATE TABLE handles(handle CHAR(64), chat_id INT);')
   logStatus('Created "handles" table')
 else:
   logStatus('Found existing "handles" table')
