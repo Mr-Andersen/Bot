@@ -97,7 +97,7 @@ def process_update(update):
 
     if command == '/del':
       if len(args) != 1 or not isHandle(args[0]):
-        return sendAnswer('wrong_args', chat_id, correct = '/del &lthandle&gt')
+        return sendAnswer('wrong_args', chat_id, correct = '/del &lt handle &gt')
       handle = args[0]
       handle = getHandle(g.db, handle)
       if handle == None or handle['chat_id'] != chat_id:
@@ -119,14 +119,14 @@ def process_update(update):
 
     if command == '/from':
       if len(args) != 1 or not args[0].isdigit():
-        return sendAnswer('wrong_args', chat_id, correct = '/from &ltint:index&gt')
+        return sendAnswer('wrong_args', chat_id, correct = '/from &lt int:index &gt')
       index = int(args[0])
       setUserFrom(g.db, getUser(g.db, chat_id)['hashed_chat_id'], index - 1)
       return sendAnswer('set_from', chat_id, index = index)
 
     if command == '/send':
       if len(args) != 1 or not isHandle(args[0]):
-        return sendAnswer('wrong_args', chat_id, correct = '/send &lthandle&gt')
+        return sendAnswer('wrong_args', chat_id, correct = '/send &lt handle &gt')
       handle = args[0]
       if getHandle(g.db, handle) == None:
         return sendAnswer('handle_not_found', chat_id)

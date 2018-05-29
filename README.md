@@ -20,4 +20,4 @@ Commands:
 
 *and*
 
-When user receives a letter, he can reply to it with some <answer message> - and bot will send a letter to author of original message, signed as that handle, which was put in "To" field (Wow, feature!)
+When user receives a letter, he can reply to it with some < answer message > - and bot will send a letter to author of original message, signed as that handle, which was put in "To" field (Wow, feature!)
