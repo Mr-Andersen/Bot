@@ -1,6 +1,6 @@
 {
   "greeting": "Oh hi, <b>{first_name}</b>\n1. Firstly you need handle, so use /new\n2. Then use /from &lt your new handle &gt\n3. Now you can send messages",
-  "new_handle": "Your new anonymous handle ({index}): <pre>{handle}</pre>",
+  "new_handle": "Your new anonymous handle ({index}): <pre>{handle}</pre>\nAnd <a href='https://t.me/anonymous_chat_ro_bot?start={handle}'>link</a> to your handle",
   "handle_not_found": "Handle not found. Check if you wrote it correctly",
   "wrong_args": "Wrong arguments. This command is used like this:\n{correct}",
   "index_out_of_bounds": "Index is out of bounds",
@@ -14,5 +14,7 @@
   "from_not_set": "You need to set use /from first",
   "letter_sent": "Your letter was sent",
   "empty": "{content}",
-  "wrong_reply": "I can process replies at letters only"
+  "wrong_reply": "I can process replies at letters only",
+  "fast_send": "Now send me letter to <pre>{handle}</pre> or use /cancel if it's not what you wanted",
+  "verify": "Do you really want to do this?\nSend me <pre>yes</pre> if you are sure or anything else (better <pre>no</pre> if you are not"
 }

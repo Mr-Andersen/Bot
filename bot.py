@@ -50,7 +50,7 @@ def tgQuery(method, **dct):
 # === other functions ===
 def sendAnswer(type_, chat_id, locale_lang = 'en', **kwargs):
   logStatus(g, 'Answering to {chat_id}'.format(chat_id = chat_id))
-  res = tgQuery('sendMessage', offset = g.offset, chat_id = chat_id,
+  res = tgQuery('sendMessage', disable_web_page_preview = True, offset = g.offset, chat_id = chat_id,
                 text = g.locale[locale_lang][type_].format(**kwargs),
                 parse_mode = 'HTML')
   if res['ok'] != True:
@@ -82,10 +82,22 @@ def process_update(update):
   state = getUser(g.db, chat_id)['state']
   command, *args = message['text'].split()
   command = command.split('@')[0]
+
+  if command == '/cancel':
+    setUserState(g.db, getUser(g.db, chat_id)['hashed_chat_id'], None)
+    return sendAnswer('cancelled', chat_id)
+
   if state == None: # user was doing nothing
 
     if command == '/start':
-      return sendAnswer('greeting', chat_id, first_name = message['from']['first_name'])
+      if len(args) == 0:
+        return sendAnswer('greeting', chat_id, first_name = message['from']['first_name'])
+      elif len(args) == 1 and isHandle(args[0]):
+        hashed_chat_id = getUser(g.db, chat_id)['hashed_chat_id']
+        setUserBuffer(g.db, hashed_chat_id, { 'target': args[0] })
+        setUserState(g.db, hashed_chat_id, 'sending')
+        return sendAnswer('fast_send', chat_id, handle = args[0])
+      return sendAnswer('wrong_args', chat_id, correct = '/start [&lt handle &gt]')
 
     if command == '/new':
       while True:
@@ -133,32 +145,50 @@ def process_update(update):
       if getUser(g.db, chat_id)['from_'] == None:
         return sendAnswer('from_not_set', chat_id)
       hashed_chat_id = getUser(g.db, chat_id)['hashed_chat_id']
-      setUserBuffer(g.db, hashed_chat_id, handle)
+      setUserBuffer(g.db, hashed_chat_id, { 'target': handle })
       setUserState(g.db, hashed_chat_id, 'sending')
       return sendAnswer('send_text', chat_id)
 
     if command == '/list':
       res = ''
       for handle in userHandles(g.db, chat_id):
-        res += '{index}: <pre>{handle}</pre>\n\n'.format(index = handle['index_'] + 1, handle = handle['handle'])
+        res += '{index}, <a href=\'https://t.me/anonymous_chat_ro_bot?start={handle}\'>link</a>: <pre>{handle}</pre>\n\n'.format(index = handle['index_'] + 1, handle = handle['handle'])
       return sendAnswer('empty', chat_id, content = res if res != '' else 'You have no handles')
 
     if command == '/help':
       return sendAnswer('help', chat_id)
 
-    if command == '/cancel':
-      setUserState(chat_id, None)
-      return sendAnswer('cancelled', chat_id)
-    return sendAnswer('unknown_command', chat_id)
+  if state == 'verify_send':
+    user = getUser(g.db, chat_id)
+    if message['text'] == 'yes':
+      handle = userHandles(g.db, chat_id)[user['from_']]['handle']
+      target_handle = user['buffer_']['target']
+      text = user['buffer_']['message_text']
+      sendAnswer('letter', getHandle(g.db, target_handle)['chat_id'], from_ = handle, to = target_handle, text = text)
+      setUserState(g.db, user['hashed_chat_id'], None)
+      setUserBuffer(g.db, user['hashed_chat_id'], None)
+      return sendAnswer('letter_sent', chat_id)
+    setUserState(g.db, user['hashed_chat_id'], None)
+    setUserBuffer(g.db, user['hashed_chat_id'], None)
+    return sendAnswer('empty', chat_id, content = 'You sent something not equal to "yes", so operation cancelled')
 
   if state == 'sending':
+    if message['text'][0] == '/':
+      user = getUser(g.db, chat_id)
+      new_buffer_ = user['buffer_']
+      new_buffer_['message_text'] = message['text']
+      setUserBuffer(g.db, user['hashed_chat_id'], new_buffer_)
+      setUserState(g.db, user['hashed_chat_id'], 'verify_send')
+      return sendAnswer('verify', chat_id)
     user = getUser(g.db, chat_id)
     handle = userHandles(g.db, chat_id)[user['from_']]['handle']
-    target_handle = user['buffer_']
+    target_handle = user['buffer_']['target']
     sendAnswer('letter', getHandle(g.db, target_handle)['chat_id'], from_ = handle, to = target_handle, text = message['text'])
     setUserState(g.db, user['hashed_chat_id'], None)
     setUserBuffer(g.db, user['hashed_chat_id'], None)
     return sendAnswer('letter_sent', chat_id)
+
+  return sendAnswer('unknown_command', chat_id)
 
 def print_dict(dct):
   return json.dumps(dct, sort_keys = True, indent = 4, ensure_ascii = False)

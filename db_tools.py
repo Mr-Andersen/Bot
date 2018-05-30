@@ -1,5 +1,6 @@
 from hashlib import sha256
 from random import Random
+import json
 
 random = Random()
 
@@ -51,7 +52,7 @@ def eraseHandle(db, handle):
 def addUser(db, chat_id):
   salt = random.randint(0, 1048576)
   hashed_chat_id = sha256(bytes(str(chat_id + salt), 'utf-8')).digest()
-  db.execute('INSERT INTO users VALUES (?, ?, NULL, NULL, NULL);', (hashed_chat_id, salt))
+  db.execute('INSERT INTO users VALUES (?, ?, NULL, NULL, ?);', (hashed_chat_id, salt, json.dumps(None)))
   db.commit()
 
 def getUser(db, chat_id):
@@ -64,7 +65,7 @@ def getUser(db, chat_id):
                'salt': row[1],
                'state': row[2],
                'from_': row[3],
-               'buffer_': row[4] }
+               'buffer_': json.loads(row[4]) }
   return None
 
 def setUserFrom(db, hashed_chat_id, from_):
@@ -76,5 +77,5 @@ def setUserState(db, hashed_chat_id, state):
   db.commit()
 
 def setUserBuffer(db, hashed_chat_id, buffer_):
-  db.execute('UPDATE users SET buffer_ = ? WHERE hashed_chat_id = ?', (buffer_, hashed_chat_id))
+  db.execute('UPDATE users SET buffer_ = ? WHERE hashed_chat_id = ?', (json.dumps(buffer_), hashed_chat_id))
   db.commit()
